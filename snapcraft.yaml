@@ -6,3 +6,12 @@ description: |
   GNU hello prints a friendly greeting.
 grade: stable
 confinement: strict
+Launching a VM.
+Launched: snapcraft-websohbet
+[...]
+Pulling my-part
+Building my-part
+Staging my-part
+Priming my-part
+Snapping 'websohbet' |
+Snapped websohbet_0.1_amd64.snap
