@@ -8,9 +8,3 @@ icon: gui/qfsview.png
 base: core18
 grade: stable
 confinement: strict
-Pulling websohbet
-Building websohbet
-Staging sohbet
-Priming sohbet
-Snapping 'websohbet' |
-Snapped websohbet_0.1_amd64.snap
