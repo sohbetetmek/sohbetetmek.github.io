@@ -1,0 +1,11 @@
+---
+application:
+  name: "sohbet"
+  project: "sohbet"
+  organization: "QoveryCommunity"
+routers:
+- name: "main-sohbet"
+  routes:
+  - application_name: "sohbet"
+    paths:
+    - "/*"
