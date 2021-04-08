@@ -1,13 +1,131 @@
 name: websohbet
 base: core18
-version: '2.10'
-summary: GNU Hello, the "hello world" snap
+summary: easily create snaps
 description: |
-  GNU hello prints a friendly greeting.
-grade: stable
-Pulling my-part
-Building my-part
-Staging my-part
-Priming my-part
-Snapping 'websohbet' |
-Snapped websohbet_0.1_amd64.snap
+    Snapcraft aims to make upstream developers' lives easier and as such is not
+    a single toolset, but instead is a collection of tools that enable the
+    natural workflow of an upstream to be extended with a simple release step
+    into Snappy.
+adopt-info: websohbet
+confinement: classic
+license: GPL-3.0
+assumes:
+  - snapd2.39
+
+apps:
+  snapcraft:
+    environment:
+      PATH: "/snap/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      # https://github.com/lxc/pylxd/pull/361
+      PYLXD_WARNINGS: "none"
+    command: usr/bin/python3 $SNAP/bin/snapcraft
+    completer: snapcraft-completion
+
+build-packages:
+  - build-essential
+  - intltool
+  - libapt-pkg-dev
+  - libffi-dev
+  - libssl-dev
+  - libsodium-dev
+  - liblzma-dev
+  - libxml2-dev
+  - libxslt1-dev
+  - libyaml-dev
+  - patch
+  - sed
+
+parts:
+  bash-completion:
+    source: debian
+    plugin: dump
+    stage:
+      - snapcraft-completion
+
+  patchelf:
+    plugin: autotools
+    source: https://github.com/snapcore/patchelf
+    source-type: git
+    source-branch: '0.9+snapcraft'
+    build-packages:
+      - g++
+      - make
+    override-build: |
+      snapcraftctl build
+      make check
+  snapcraft-libs:
+    plugin: nil
+    stage-packages:
+        - apt
+        - apt-transport-https
+        - apt-utils
+        - binutils
+        - execstack
+        - gpg
+        - gpgv
+        - libffi6
+        - libsodium23
+        - libxml2
+        - libxslt1.1
+        - squashfs-tools
+        - xdelta3
+    override-build: |
+      snapcraftctl build
+      echo "Create libsodium symlink..."
+      TRIPLET_PATH="$SNAPCRAFT_PART_INSTALL/usr/lib/$(gcc -print-multiarch)"
+      LIBSODIUM="$(readlink -n "$TRIPLET_PATH/libsodium.so.23")"
+      # Remove so the link can be recreated on re-builds
+      rm -f "$TRIPLET_PATH/libsodium.so"
+      ln -s "$LIBSODIUM" "$TRIPLET_PATH/libsodium.so"
+  snapcraft:
+    source: .
+    plugin: python
+    python-packages:
+        # Lock down cryptography to 3.4 to override the rust dependency.
+        - cryptography==3.4
+    requirements:
+        - requirements.txt
+    organize:
+        # Put snapcraftctl into its own directory that can be included in the PATH
+        # without including other binaries.
+        bin/snapcraftctl: bin/scriptlet-bin/snapcraftctl
+    build-environment:
+        - "CRYPTOGRAPHY_DONT_BUILD_RUST": "1"
+        - "SODIUM_INSTALL": "system"
+    override-build: |
+        # pip 20.2 breaks python3-apt, so we pin
+        # the version of pip installed before building
+        PYTHONHOME=/usr PYTHONUSERBASE=$SNAPCRAFT_PART_INSTALL $SNAPCRAFT_PART_INSTALL/usr/bin/python3 -m pip install pip==20.1 --user
+        snapcraftctl build
+        version="$(python3 setup.py --version)"
+        snapcraftctl set-version "$version"
+        [ -n "$(echo $version | grep "+git")" ] && grade=devel || grade=stable
+        snapcraftctl set-grade "$grade"
+        $SNAPCRAFT_PROJECT_DIR/tools/snapcraft-override-build.sh
+    override-prime: |
+        snapcraftctl prime
+        echo "Compiling pyc files..."
+        # This is the last step, let's now compile all our pyc files.
+        "$SNAPCRAFT_PART_INSTALL/usr/bin/python3" -m compileall -q .
+    after: [snapcraft-libs]
+
+  legacy-snapcraft:
+    plugin: python
+    python-packages:
+        # Lock down cryptography to 3.4 to override the rust dependency.
+        - cryptography==3.4
+    source: https://github.com/snapcore/snapcraft.git
+    source-branch: legacy
+    source-depth: 1
+    requirements:
+        - requirements.txt
+    build-environment:
+        - "CRYPTOGRAPHY_DONT_BUILD_RUST": "1"
+        - "SODIUM_INSTALL": "system"
+    override-build: |
+        snapcraftctl build
+        $SNAPCRAFT_PROJECT_DIR/tools/snapcraft-override-build.sh
+        sed -ri 's|(lib/.*/site-packages)|legacy_snapcraft/\1|' $SNAPCRAFT_PART_INSTALL/usr/lib/python3.6/sitecustomize.py
+    organize:
+        '*': legacy_snapcraft/
+    after: [snapcraft-libs]
