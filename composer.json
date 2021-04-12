@@ -12,10 +12,3 @@
                     "type":"git",
                     "reference":"master"
                 }
-            }
-        }
-{
-"require": {
-"sohbetetmek/sohbetetmek.github.io": "2.*",
-},
-}
