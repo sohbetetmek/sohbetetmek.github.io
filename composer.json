@@ -8,6 +8,6 @@
         }
     ],
     "require": {
-        "monolog/monolog": "^1.14"
+        "sohbet/sohbet": "^1.14"
     }
 }
