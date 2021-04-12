@@ -1,13 +1,13 @@
 {
-    "name":"Sohbet",
-    "description":"https://sohbet.page Bedava sohbet odaları üyelik gerekmeyen ücretsiz sohbet %100 güvenli mobil chat shbet siteleri",
-    "repositories":[
+    "name": "Sohbet",
+    "description": "https://sohbet.page ücretsiz sohbet web sohbet odaları üyelik gerekmeyen %100 güvenli mobil chat parasız sohbet siteleri",
+    "authors": [
         {
-            "type":"package",
-            "package":{
-                "name":"sohbetetmek/sohbetetmek.github.io",
-                "version":"master",
-                "source":{
-                    "url":"git://github.com/sohbetetmek/sohbetetmek.github.io.git",
-                    "type":"git",
-                    "reference":"master"
+            "name": "sohbet",
+            "email": "sohbetetm@gmail.com"
+        }
+    ],
+    "require": {
+        "monolog/monolog": "^1.14"
+    }
+}
