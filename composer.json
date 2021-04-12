@@ -14,3 +14,8 @@
                 }
             }
         }
+{
+"require": {
+"sohbetetmek/sohbetetmek.github.io": "2.*",
+},
+}
